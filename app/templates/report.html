@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app-container">
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4" />
+                    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                </svg>
+            </div>
+            <div>
+                <h1>True Capability Report</h1>
+                <p class="subtitle">{{ candidate_name or "Unknown Candidate" }}</p>
+            </div>
+        </div>
+        <a href="/" class="btn btn-secondary">← New Analysis</a>
+    </header>
+
+    <main class="report-content">
+
+        <!-- Score Banner -->
+        <div class="score-banner">
+            <div class="score-circle" style="--score-color: {{ score_color }};">
+                <svg viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="{{ score_color }}" stroke-width="8"
+                        stroke-dasharray="{{ (overall_score / 100) * 339.292 }} 339.292" stroke-linecap="round"
+                        transform="rotate(-90 60 60)" class="score-ring" />
+                </svg>
+                <div class="score-value">
+                    <span class="score-number">{{ overall_score | round(1) }}</span>
+                    <span class="score-max">/100</span>
+                </div>
+            </div>
+            <div class="score-details">
+                <h2 class="score-label" style="color: {{ score_color }};">{{ score_label }}</h2>
+                <p class="score-summary">{{ summary }}</p>
+            </div>
+        </div>
+
+        <!-- AI Detection -->
+        <div class="report-card ai-detection-card">
+            <div class="card-header">
+                <h3>🧠 AI Content Detection</h3>
+                <span class="badge" style="background: {{ ai_verdict_color }}20; color: {{ ai_verdict_color }};">
+                    {{ (ai_generated_probability * 100) | round(1) }}% AI Probability
+                </span>
+            </div>
+            <div class="ai-meter">
+                <div class="ai-fill"
+                    style="width: {{ ai_generated_probability * 100 }}%; background: {{ ai_verdict_color }};"></div>
+            </div>
+            <p class="ai-label">
+                {% if ai_generated_probability >= 0.7 %}
+                ⚠️ High likelihood of AI-generated content detected
+                {% elif ai_generated_probability >= 0.4 %}
+                ⚡ Moderate indicators of AI-generated content
+                {% else %}
+                ✅ Content appears to be human-written
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Red Flags & Strengths -->
+        <div class="two-col">
+            {% if red_flags %}
+            <div class="report-card red-flags-card">
+                <div class="card-header">
+                    <h3>🚩 Red Flags</h3>
+                </div>
+                <ul class="flag-list">
+                    {% for flag in red_flags %}
+                    <li class="flag-item flag-red">
+                        <span class="flag-icon">⚠️</span>
+                        <span>{{ flag }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if strengths %}
+            <div class="report-card strengths-card">
+                <div class="card-header">
+                    <h3>💪 Verified Strengths</h3>
+                </div>
+                <ul class="flag-list">
+                    {% for strength in strengths %}
+                    <li class="flag-item flag-green">
+                        <span class="flag-icon">✅</span>
+                        <span>{{ strength }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Confidence Heatmap -->
+        <div class="report-card">
+            <div class="card-header">
+                <h3>🎯 Claim Verification Heatmap</h3>
+            </div>
+            <div class="confidence-grid">
+                <div class="confidence-stat verified">
+                    <span class="conf-count">{{ confidence_distribution.verified }}</span>
+                    <span class="conf-label">✅ Verified</span>
+                </div>
+                <div class="confidence-stat partial">
+                    <span class="conf-count">{{ confidence_distribution.partial }}</span>
+                    <span class="conf-label">⚠️ Partial</span>
+                </div>
+                <div class="confidence-stat unverifiable">
+                    <span class="conf-count">{{ confidence_distribution.unverifiable }}</span>
+                    <span class="conf-label">❌ Unverifiable</span>
+                </div>
+                <div class="confidence-stat contradicted">
+                    <span class="conf-count">{{ confidence_distribution.contradicted }}</span>
+                    <span class="conf-label">🚫 Contradicted</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Verifications -->
+        {% for category, verifications in grouped_verifications.items() %}
+        <div class="report-card">
+            <div class="card-header">
+                <h3>{{ category | replace("_", " ") | title }}</h3>
+                <span class="badge badge-neutral">{{ verifications | length }} claims</span>
+            </div>
+            <div class="verification-list">
+                {% for v in verifications %}
+                <div class="verification-item confidence-{{ v.confidence }}">
+                    <div class="v-header">
+                        <span class="v-claim">{{ v.claim }}</span>
+                        <span class="v-confidence v-{{ v.confidence }}">
+                            {% if v.confidence == 'verified' %}✅{% elif v.confidence == 'partial' %}⚠️{% elif
+                            v.confidence == 'contradicted' %}🚫{% else %}❌{% endif %}
+                            {{ v.confidence | replace("_", " ") | title }}
+                        </span>
+                    </div>
+                    <div class="v-score-bar">
+                        <div class="v-score-fill" style="width: {{ v.score * 100 }}%;"></div>
+                    </div>
+                    {% if v.evidence %}
+                    <ul class="v-evidence">
+                        {% for e in v.evidence %}
+                        <li>{{ e }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Profile Data -->
+        {% if scraped_profiles %}
+        <div class="report-card">
+            <div class="card-header">
+                <h3>📊 Scraped Profile Data</h3>
+            </div>
+
+            {% if scraped_profiles.github %}
+            <div class="profile-section">
+                <h4>🐙 GitHub — {{ scraped_profiles.github.username }}</h4>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.github.public_repos }}</span>
+                        <span class="stat-label">Repos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.github.total_stars }}</span>
+                        <span class="stat-label">Stars</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.github.followers }}</span>
+                        <span class="stat-label">Followers</span>
+                    </div>
+                </div>
+                {% if scraped_profiles.github.top_languages %}
+                <div class="tag-list">
+                    {% for lang in scraped_profiles.github.top_languages %}
+                    <span class="tag">{{ lang }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if scraped_profiles.codeforces %}
+            <div class="profile-section">
+                <h4>⚡ Codeforces — {{ scraped_profiles.codeforces.handle }}</h4>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.codeforces.rating }}</span>
+                        <span class="stat-label">Rating</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.codeforces.max_rating }}</span>
+                        <span class="stat-label">Max Rating</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.codeforces.problems_solved }}</span>
+                        <span class="stat-label">Solved</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ scraped_profiles.codeforces.contests_participated }}</span>
+                        <span class="stat-label">Contests</span>
+                    </div>
+                </div>
+                {% if scraped_profiles.codeforces.rank %}
+                <span class="tag tag-accent">{{ scraped_profiles.codeforces.rank }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Web Search Results -->
+        {% if web_search_findings %}
+        <div class="report-card">
+            <div class="card-header">
+                <h3>🔍 Web Search Findings</h3>
+                <span class="badge badge-neutral">{{ web_search_findings | length }} results</span>
+            </div>
+            <div class="search-results">
+                {% for result in web_search_findings[:8] %}
+                <div class="search-item">
+                    <a href="{{ result.url }}" target="_blank" class="search-title">{{ result.title }}</a>
+                    <p class="search-snippet">{{ result.snippet }}</p>
+                    <span class="search-url">{{ result.url[:80] }}{% if result.url|length > 80 %}...{% endif %}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <p>Generated by True Capability Validator — Eightfold AI × Techkriti'26</p>
+    </footer>
+</div>
+{% endblock %}

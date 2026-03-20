@@ -1,0 +1,32 @@
+# FastAPI & Server
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+python-multipart>=0.0.20
+jinja2>=3.1.5
+aiofiles>=24.1.0
+websockets>=14.1
+
+# PDF Parsing
+pdfplumber>=0.11.0
+PyMuPDF>=1.25.0
+pytesseract>=0.3.13
+
+# NLP & Entity Extraction
+spacy>=3.7.0
+urlextract>=1.9.0
+
+# Scraping & APIs
+PyGithub>=2.6.0
+httpx>=0.28.0
+beautifulsoup4>=4.12.3
+duckduckgo-search>=7.0.0
+
+# AI / LLM
+google-generativeai>=0.8.0
+
+# Database
+aiosqlite>=0.20.0
+
+# Utilities
+python-dotenv>=1.0.1
+pydantic-settings>=2.7.0

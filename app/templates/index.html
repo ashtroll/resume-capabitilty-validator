@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app-container">
+    <!-- Background Effects -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4" />
+                    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                </svg>
+            </div>
+            <div>
+                <h1>True Capability Validator</h1>
+                <p class="subtitle">Eightfold AI × Techkriti'26</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h2 class="hero-title">Verify Resume Claims<br><span class="gradient-text">With Real Evidence</span></h2>
+            <p class="hero-desc">
+                Upload a resume and our AI will cross-reference claims against GitHub, Codeforces,
+                LinkedIn, and the broader web — generating a verifiable capability report.
+            </p>
+        </section>
+
+        <!-- Upload Card -->
+        <div class="upload-card" id="upload-section">
+            <div class="upload-zone" id="drop-zone">
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <h3>Drop your resume here</h3>
+                <p>or click to browse — PDF files only, up to 10MB</p>
+                <input type="file" id="file-input" accept=".pdf" hidden>
+                <button class="btn btn-primary" id="browse-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    Browse Files
+                </button>
+            </div>
+
+            <!-- File Selected State -->
+            <div class="file-selected" id="file-selected" style="display: none;">
+                <div class="file-info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span id="file-name"></span>
+                    <button class="btn-remove" id="remove-file">✕</button>
+                </div>
+                <button class="btn btn-primary btn-analyze" id="analyze-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    Analyze Resume
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progress-section" style="display: none;">
+            <div class="progress-card">
+                <div class="progress-header">
+                    <div class="spinner"></div>
+                    <h3>Analyzing Resume</h3>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <p class="progress-status" id="progress-status">Uploading file...</p>
+
+                <div class="pipeline-steps">
+                    <div class="step" id="step-parsing">
+                        <div class="step-indicator"></div>
+                        <span>PDF Parsing</span>
+                    </div>
+                    <div class="step" id="step-extracting">
+                        <div class="step-indicator"></div>
+                        <span>Entity Extraction</span>
+                    </div>
+                    <div class="step" id="step-scraping">
+                        <div class="step-indicator"></div>
+                        <span>Profile Scraping</span>
+                    </div>
+                    <div class="step" id="step-searching">
+                        <div class="step-indicator"></div>
+                        <span>Web Search</span>
+                    </div>
+                    <div class="step" id="step-analyzing">
+                        <div class="step-indicator"></div>
+                        <span>Cross-Reference Analysis</span>
+                    </div>
+                    <div class="step" id="step-completed">
+                        <div class="step-indicator"></div>
+                        <span>Report Generation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon" style="--accent: #818cf8;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                    </svg>
+                </div>
+                <h4>GitHub Analysis</h4>
+                <p>Repos, languages, stars, commit patterns, and contribution activity</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="--accent: #f472b6;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </div>
+                <h4>Competitive Programming</h4>
+                <p>Codeforces ratings, problems solved, contest history verification</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="--accent: #34d399;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                </div>
+                <h4>Digital Footprint</h4>
+                <p>Web search fallback for candidates without profile links</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="--accent: #fbbf24;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <h4>AI Content Detection</h4>
+                <p>Flags LLM-generated or heavily embellished resume sections</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Built for Eightfold AI × Techkriti'26 Hackathon</p>
+    </footer>
+</div>
+{% endblock %}
