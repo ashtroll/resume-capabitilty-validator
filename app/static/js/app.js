@@ -1,11 +1,12 @@
 /**
- * True Capability Validator — Frontend Logic
+ * True Capability Validator — Frontend Logic v2
  *
  * Handles:
  *  - Drag-and-drop file upload
  *  - Resume upload via fetch API
  *  - Analysis progress polling
  *  - Redirect to report on completion
+ *  - Particle canvas background
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -26,6 +27,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedFile = null;
 
+    // ── Particle Canvas ─────────────────────────────────────────────────
+    initParticles();
+
+    function initParticles() {
+        const canvas = document.getElementById("particle-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        let W = canvas.width = window.innerWidth;
+        let H = canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        });
+
+        const PARTICLE_COUNT = 55;
+        const particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.6 + 0.4,
+            dx: (Math.random() - 0.5) * 0.35,
+            dy: (Math.random() - 0.5) * 0.35,
+            o: Math.random() * 0.5 + 0.15,
+        }));
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(129, 140, 248, ${p.o})`;
+                ctx.fill();
+
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0 || p.x > W) p.dx *= -1;
+                if (p.y < 0 || p.y > H) p.dy *= -1;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
     // ── Drag & Drop ────────────────────────────────────────────────────
 
     dropZone.addEventListener("dragover", (e) => {
@@ -41,9 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         dropZone.classList.remove("drag-over");
         const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFileSelection(files[0]);
-        }
+        if (files.length > 0) handleFileSelection(files[0]);
     });
 
     // ── File Browse ────────────────────────────────────────────────────
@@ -55,9 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     fileInput.addEventListener("change", (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelection(e.target.files[0]);
-        }
+        if (e.target.files.length > 0) handleFileSelection(e.target.files[0]);
     });
 
     // ── Remove File ────────────────────────────────────────────────────
@@ -72,20 +113,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ── Analyze Button ─────────────────────────────────────────────────
 
     analyzeBtn.addEventListener("click", () => {
-        if (selectedFile) {
-            uploadAndAnalyze(selectedFile);
-        }
+        if (selectedFile) uploadAndAnalyze(selectedFile);
     });
 
     // ── Helpers ─────────────────────────────────────────────────────────
 
     function handleFileSelection(file) {
         if (!file.name.toLowerCase().endsWith(".pdf")) {
-            alert("Please select a PDF file");
+            showToast("Please select a PDF file", "error");
             return;
         }
         if (file.size > 10 * 1024 * 1024) {
-            alert("File too large. Maximum size is 10MB.");
+            showToast("File too large. Maximum size is 10MB.", "error");
             return;
         }
         selectedFile = file;
@@ -95,14 +134,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function uploadAndAnalyze(file) {
-        // Show progress
         uploadSection.style.display = "none";
         progressSection.style.display = "block";
         progressBar.style.width = "5%";
         progressStatus.textContent = "Uploading resume...";
 
         try {
-            // Upload file
             const formData = new FormData();
             formData.append("file", file);
 
@@ -120,12 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
             progressBar.style.width = "15%";
             progressStatus.textContent = "Upload complete. Starting analysis...";
 
-            // Poll for status
             pollJobStatus(job_id);
 
         } catch (error) {
             progressStatus.textContent = `Error: ${error.message}`;
-            progressBar.style.width = "0%";
+            progressBar.style.width = "100%";
             progressBar.style.background = "#ef4444";
         }
     }
@@ -152,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 progressBar.style.width = `${info.progress}%`;
                 progressStatus.textContent = info.text;
 
-                // Update pipeline step indicators
                 updatePipelineSteps(status, statusMap);
 
                 if (status === "completed") {
@@ -187,5 +222,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 stepEl.classList.add("active");
             }
         });
+    }
+
+    // ── Toast notifications ─────────────────────────────────────────────
+    function showToast(message, type = "info") {
+        const toast = document.createElement("div");
+        toast.style.cssText = `
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: ${type === "error" ? "rgba(239,68,68,0.9)" : "rgba(15,15,28,0.95)"};
+            color: white; padding: 12px 22px; border-radius: 10px;
+            font-size: 0.875rem; font-weight: 500; z-index: 9999;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            animation: fadeUp 0.3s ease;
+            font-family: inherit;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
     }
 });

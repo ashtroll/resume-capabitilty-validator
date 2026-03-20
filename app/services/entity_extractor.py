@@ -220,12 +220,19 @@ class EntityExtractor:
             # Skip lines that are too long (likely descriptions, not names)
             if len(line) > 50:
                 continue
-            # A name line typically has 2-4 words, each capitalized
+            # Reject lines containing digits or commas (unlikely to be just a name)
+            if any(char.isdigit() for char in line) or ',' in line:
+                continue
+
+            # A name line typically has 2-5 words, with most capitalized
             words = line.split()
-            if 1 <= len(words) <= 5:
-                # Check if most words start with uppercase
-                capitalized = sum(1 for w in words if w[0].isupper())
-                if capitalized >= len(words) * 0.5:
+            if 2 <= len(words) <= 5: # Require at least two words for a name
+                # Check if the first word is capitalized
+                if not words[0] or not words[0][0].isupper():
+                    continue
+                # Check if most words (at least 75%) start with uppercase
+                capitalized_words = [w for w in words if w and w[0].isupper()]
+                if len(capitalized_words) >= len(words) * 0.75:
                     return line
         return None
 

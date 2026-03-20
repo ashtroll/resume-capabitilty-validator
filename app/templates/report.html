@@ -16,7 +16,9 @@
             </div>
             <div>
                 <h1>True Capability Report</h1>
-                <p class="subtitle">{{ candidate_name or "Unknown Candidate" }}</p>
+                <p class="subtitle">
+                    <span class="gradient-text">{{ candidate_name or "Unknown Candidate" }}</span>
+                </p>
             </div>
         </div>
         <a href="/" class="btn btn-secondary">← New Analysis</a>
@@ -25,16 +27,17 @@
     <main class="report-content">
 
         <!-- Score Banner -->
-        <div class="score-banner">
-            <div class="score-circle" style="--score-color: {{ score_color }};">
-                <svg viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
-                    <circle cx="60" cy="60" r="54" fill="none" stroke="{{ score_color }}" stroke-width="8"
-                        stroke-dasharray="{{ (overall_score / 100) * 339.292 }} 339.292" stroke-linecap="round"
-                        transform="rotate(-90 60 60)" class="score-ring" />
+        <div class="score-banner" id="score-banner">
+            <div class="score-halo" id="score-halo"></div>
+            <div class="score-circle">
+                <svg viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="9" />
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="{{ score_color }}" stroke-width="9"
+                        stroke-dasharray="0 376.99" stroke-linecap="round" transform="rotate(-90 70 70)"
+                        class="score-ring" id="score-ring" data-score="{{ overall_score }}" />
                 </svg>
                 <div class="score-value">
-                    <span class="score-number">{{ overall_score | round(1) }}</span>
+                    <span class="score-number" style="color: {{ score_color }};" id="score-number">0</span>
                     <span class="score-max">/100</span>
                 </div>
             </div>
@@ -47,14 +50,19 @@
         <!-- AI Detection -->
         <div class="report-card ai-detection-card">
             <div class="card-header">
-                <h3>🧠 AI Content Detection</h3>
-                <span class="badge" style="background: {{ ai_verdict_color }}20; color: {{ ai_verdict_color }};">
+                <h3>
+                    <span class="card-icon" style="background: rgba(167,139,250,0.12);">🧠</span>
+                    AI Content Detection
+                </h3>
+                <span class="badge"
+                    style="background: {{ ai_verdict_color }}18; color: {{ ai_verdict_color }}; border: 1px solid {{ ai_verdict_color }}30;">
                     {{ (ai_generated_probability * 100) | round(1) }}% AI Probability
                 </span>
             </div>
             <div class="ai-meter">
-                <div class="ai-fill"
-                    style="width: {{ ai_generated_probability * 100 }}%; background: {{ ai_verdict_color }};"></div>
+                <div class="ai-fill" id="ai-fill" style="background: {{ ai_verdict_color }};"
+                    data-width="{{ ai_generated_probability * 100 }}">
+                </div>
             </div>
             <p class="ai-label">
                 {% if ai_generated_probability >= 0.7 %}
@@ -68,15 +76,20 @@
         </div>
 
         <!-- Red Flags & Strengths -->
-        <div class="two-col">
+        <div class="two-col" style="margin-bottom: 20px;">
             {% if red_flags %}
             <div class="report-card red-flags-card">
                 <div class="card-header">
-                    <h3>🚩 Red Flags</h3>
+                    <h3>
+                        <span class="card-icon" style="background: rgba(248,113,113,0.1);">🚩</span>
+                        Red Flags
+                    </h3>
+                    <span class="badge" style="background: rgba(248,113,113,0.1); color: var(--accent-red);">{{
+                        red_flags | length }}</span>
                 </div>
                 <ul class="flag-list">
                     {% for flag in red_flags %}
-                    <li class="flag-item flag-red">
+                    <li class="flag-item">
                         <span class="flag-icon">⚠️</span>
                         <span>{{ flag }}</span>
                     </li>
@@ -88,11 +101,16 @@
             {% if strengths %}
             <div class="report-card strengths-card">
                 <div class="card-header">
-                    <h3>💪 Verified Strengths</h3>
+                    <h3>
+                        <span class="card-icon" style="background: rgba(52,211,153,0.1);">💪</span>
+                        Verified Strengths
+                    </h3>
+                    <span class="badge" style="background: rgba(52,211,153,0.1); color: var(--accent-green);">{{
+                        strengths | length }}</span>
                 </div>
                 <ul class="flag-list">
                     {% for strength in strengths %}
-                    <li class="flag-item flag-green">
+                    <li class="flag-item">
                         <span class="flag-icon">✅</span>
                         <span>{{ strength }}</span>
                     </li>
@@ -105,7 +123,10 @@
         <!-- Confidence Heatmap -->
         <div class="report-card">
             <div class="card-header">
-                <h3>🎯 Claim Verification Heatmap</h3>
+                <h3>
+                    <span class="card-icon" style="background: rgba(129,140,248,0.1);">🎯</span>
+                    Claim Verification Heatmap
+                </h3>
             </div>
             <div class="confidence-grid">
                 <div class="confidence-stat verified">
@@ -131,7 +152,18 @@
         {% for category, verifications in grouped_verifications.items() %}
         <div class="report-card">
             <div class="card-header">
-                <h3>{{ category | replace("_", " ") | title }}</h3>
+                <h3>
+                    {% if category == 'skill' %}
+                    <span class="card-icon" style="background: rgba(129,140,248,0.1);">⚙️</span>
+                    {% elif category == 'competitive_programming' %}
+                    <span class="card-icon" style="background: rgba(251,191,36,0.1);">⚡</span>
+                    {% elif category == 'digital_footprint' %}
+                    <span class="card-icon" style="background: rgba(52,211,153,0.1);">🌐</span>
+                    {% else %}
+                    <span class="card-icon" style="background: rgba(167,139,250,0.1);">📋</span>
+                    {% endif %}
+                    {{ category | replace("_", " ") | title }}
+                </h3>
                 <span class="badge badge-neutral">{{ verifications | length }} claims</span>
             </div>
             <div class="verification-list">
@@ -140,13 +172,15 @@
                     <div class="v-header">
                         <span class="v-claim">{{ v.claim }}</span>
                         <span class="v-confidence v-{{ v.confidence }}">
-                            {% if v.confidence == 'verified' %}✅{% elif v.confidence == 'partial' %}⚠️{% elif
-                            v.confidence == 'contradicted' %}🚫{% else %}❌{% endif %}
+                            {% if v.confidence == 'verified' %}✅
+                            {% elif v.confidence == 'partial' %}⚠️
+                            {% elif v.confidence == 'contradicted' %}🚫
+                            {% else %}❌{% endif %}
                             {{ v.confidence | replace("_", " ") | title }}
                         </span>
                     </div>
                     <div class="v-score-bar">
-                        <div class="v-score-fill" style="width: {{ v.score * 100 }}%;"></div>
+                        <div class="v-score-fill" data-width="{{ v.score * 100 }}"></div>
                     </div>
                     {% if v.evidence %}
                     <ul class="v-evidence">
@@ -161,66 +195,92 @@
         </div>
         {% endfor %}
 
-        <!-- Profile Data -->
+        <!-- Scraped Profile Data -->
         {% if scraped_profiles %}
         <div class="report-card">
             <div class="card-header">
-                <h3>📊 Scraped Profile Data</h3>
+                <h3>
+                    <span class="card-icon" style="background: rgba(129,140,248,0.1);">📊</span>
+                    Scraped Profile Data
+                </h3>
             </div>
 
-            {% if scraped_profiles.github %}
-            <div class="profile-section">
-                <h4>🐙 GitHub — {{ scraped_profiles.github.username }}</h4>
-                <div class="profile-stats">
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.github.public_repos }}</span>
-                        <span class="stat-label">Repos</span>
+            <div class="profile-cards-row">
+                {% if scraped_profiles.github %}
+                <div class="profile-card github">
+                    <div class="profile-card-header">
+                        <span class="platform-icon">🐙</span>
+                        GitHub — {{ scraped_profiles.github.username }}
                     </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.github.total_stars }}</span>
-                        <span class="stat-label">Stars</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.github.followers }}</span>
-                        <span class="stat-label">Followers</span>
+                    <div class="profile-card-body">
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-value" data-countup="{{ scraped_profiles.github.public_repos }}">{{
+                                    scraped_profiles.github.public_repos }}</span>
+                                <span class="stat-label">Repos</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" data-countup="{{ scraped_profiles.github.total_stars }}">{{
+                                    scraped_profiles.github.total_stars }}</span>
+                                <span class="stat-label">Stars</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" data-countup="{{ scraped_profiles.github.followers }}">{{
+                                    scraped_profiles.github.followers }}</span>
+                                <span class="stat-label">Followers</span>
+                            </div>
+                        </div>
+                        {% if scraped_profiles.github.top_languages %}
+                        <div class="tag-list">
+                            {% for lang in scraped_profiles.github.top_languages %}
+                            <span class="tag">{{ lang }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% if scraped_profiles.github.top_languages %}
-                <div class="tag-list">
-                    {% for lang in scraped_profiles.github.top_languages %}
-                    <span class="tag">{{ lang }}</span>
-                    {% endfor %}
+                {% endif %}
+
+                {% if scraped_profiles.codeforces %}
+                <div class="profile-card codeforces">
+                    <div class="profile-card-header">
+                        <span class="platform-icon">⚡</span>
+                        Codeforces — {{ scraped_profiles.codeforces.handle }}
+                    </div>
+                    <div class="profile-card-body">
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-value" data-countup="{{ scraped_profiles.codeforces.rating }}">{{
+                                    scraped_profiles.codeforces.rating }}</span>
+                                <span class="stat-label">Rating</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" data-countup="{{ scraped_profiles.codeforces.max_rating }}">{{
+                                    scraped_profiles.codeforces.max_rating }}</span>
+                                <span class="stat-label">Max</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value"
+                                    data-countup="{{ scraped_profiles.codeforces.problems_solved }}">{{
+                                    scraped_profiles.codeforces.problems_solved }}</span>
+                                <span class="stat-label">Solved</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value"
+                                    data-countup="{{ scraped_profiles.codeforces.contests_participated }}">{{
+                                    scraped_profiles.codeforces.contests_participated }}</span>
+                                <span class="stat-label">Contests</span>
+                            </div>
+                        </div>
+                        {% if scraped_profiles.codeforces.rank %}
+                        <div class="tag-list">
+                            <span class="tag tag-accent">{{ scraped_profiles.codeforces.rank }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endif %}
             </div>
-            {% endif %}
-
-            {% if scraped_profiles.codeforces %}
-            <div class="profile-section">
-                <h4>⚡ Codeforces — {{ scraped_profiles.codeforces.handle }}</h4>
-                <div class="profile-stats">
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.codeforces.rating }}</span>
-                        <span class="stat-label">Rating</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.codeforces.max_rating }}</span>
-                        <span class="stat-label">Max Rating</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.codeforces.problems_solved }}</span>
-                        <span class="stat-label">Solved</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">{{ scraped_profiles.codeforces.contests_participated }}</span>
-                        <span class="stat-label">Contests</span>
-                    </div>
-                </div>
-                {% if scraped_profiles.codeforces.rank %}
-                <span class="tag tag-accent">{{ scraped_profiles.codeforces.rank }}</span>
-                {% endif %}
-            </div>
-            {% endif %}
         </div>
         {% endif %}
 
@@ -228,13 +288,24 @@
         {% if web_search_findings %}
         <div class="report-card">
             <div class="card-header">
-                <h3>🔍 Web Search Findings</h3>
+                <h3>
+                    <span class="card-icon" style="background: rgba(52,211,153,0.1);">🔍</span>
+                    Web Search Findings
+                </h3>
                 <span class="badge badge-neutral">{{ web_search_findings | length }} results</span>
             </div>
             <div class="search-results">
                 {% for result in web_search_findings[:8] %}
                 <div class="search-item">
-                    <a href="{{ result.url }}" target="_blank" class="search-title">{{ result.title }}</a>
+                    <div class="search-item-top">
+                        {% if result.url %}
+                        <img class="search-favicon"
+                            src="https://www.google.com/s2/favicons?domain={{ result.url.split('/')[2] }}&sz=16" alt=""
+                            loading="lazy" onerror="this.style.display='none'">
+                        {% endif %}
+                        <a href="{{ result.url }}" target="_blank" rel="noopener" class="search-title">{{ result.title
+                            }}</a>
+                    </div>
                     <p class="search-snippet">{{ result.snippet }}</p>
                     <span class="search-url">{{ result.url[:80] }}{% if result.url|length > 80 %}...{% endif %}</span>
                 </div>
@@ -249,4 +320,89 @@
         <p>Generated by True Capability Validator — Eightfold AI × Techkriti'26</p>
     </footer>
 </div>
+
+<script>
+    // ── Score ring animation ──────────────────────────────────────────────────
+    (function () {
+        const ring = document.getElementById('score-ring');
+        const scoreEl = document.getElementById('score-number');
+        const halo = document.getElementById('score-halo');
+
+        if (!ring) return;
+
+        const score = parseFloat(ring.dataset.score || 0);
+        const circumference = 376.99; // 2π × 60
+        const target = (score / 100) * circumference;
+
+        // Animate ring fill
+        requestAnimationFrame(() => {
+            ring.style.transition = 'stroke-dasharray 1.8s cubic-bezier(0.4,0,0.2,1)';
+            ring.style.strokeDasharray = `${target} ${circumference}`;
+        });
+
+        // Animate score number count-up
+        const duration = 1600;
+        const start = performance.now();
+        function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            scoreEl.textContent = Math.round(eased * score);
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+
+        // Apply halo color from the ring's stroke
+        const color = ring.getAttribute('stroke');
+        if (halo && color) {
+            halo.style.background = `radial-gradient(circle, ${color}28 0%, transparent 70%)`;
+        }
+    })();
+
+    // ── Stat count-up animation ──────────────────────────────────────────────
+    (function () {
+        const stats = document.querySelectorAll('[data-countup]');
+        const duration = 1400;
+
+        stats.forEach(el => {
+            const target = parseInt(el.dataset.countup, 10) || 0;
+            el.textContent = '0';
+            const start = performance.now() + 300; // slight delay
+
+            function tick(now) {
+                if (now < start) { requestAnimationFrame(tick); return; }
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(eased * target);
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        });
+    })();
+
+    // ── V-score bar animation ─────────────────────────────────────────────────
+    (function () {
+        const bars = document.querySelectorAll('.v-score-fill');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const w = el.dataset.width || 0;
+                    el.style.width = w + '%';
+                    observer.unobserve(el);
+                }
+            });
+        }, { threshold: 0.1 });
+        bars.forEach(b => observer.observe(b));
+    })();
+
+    // ── AI fill bar animation ─────────────────────────────────────────────────
+    (function () {
+        const fill = document.getElementById('ai-fill');
+        if (!fill) return;
+        const w = parseFloat(fill.dataset.width || 0);
+        setTimeout(() => { fill.style.width = w + '%'; }, 300);
+    })();
+</script>
 {% endblock %}
