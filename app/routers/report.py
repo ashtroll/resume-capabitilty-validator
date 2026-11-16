@@ -35,7 +35,7 @@ async def view_report(request: Request, job_id: str):
     report = TrueCapabilityReport(**json.loads(report_data))
     context = ReportGenerator.to_template_context(report)
     context["request"] = request
-    return templates.TemplateResponse("report.html", context)
+    return templates.TemplateResponse(request, "report.html", context)
 
 
 async def _fetch_report(job_id: str) -> str:

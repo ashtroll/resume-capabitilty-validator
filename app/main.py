@@ -93,7 +93,7 @@ app.include_router(report.router)
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Serve the main upload page."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/health")
